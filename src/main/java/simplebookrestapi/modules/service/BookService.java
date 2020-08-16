@@ -1,4 +1,4 @@
-package simplebookrestapi.service;
+package simplebookrestapi.modules.service;
 
 import org.springframework.stereotype.Service;
 

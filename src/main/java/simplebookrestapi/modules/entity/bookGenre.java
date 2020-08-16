@@ -1,4 +1,4 @@
-package simplebookrestapi.entity;
+package simplebookrestapi.modules.entity;
 
 public enum bookGenre {
 
