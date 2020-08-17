@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 import lombok.RequiredArgsConstructor;
-import simplebookrestapi.infra.clamins.OrganizationSubClaimAdapter;
 import simplebookrestapi.modules.service.AccountService;
 
 @RequiredArgsConstructor
