@@ -65,8 +65,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.mvcMatchers(HttpMethod.GET, "/api/**")
 					.permitAll()
 				.anyRequest()
-					.permitAll()
-					//.authenticated()
+					//.permitAll()
+					.authenticated()
 				.and()
 			.exceptionHandling()
 				.authenticationEntryPoint(unauthorizedHandler)
@@ -75,5 +75,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		
 		//http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 	}
+	
+	
 		
 }
