@@ -23,11 +23,11 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableResourceServer
 public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
-    @Override
-    public void configure(final HttpSecurity http) throws Exception {
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).and().authorizeRequests().antMatchers("/swagger*", "/v2/**").access("#oauth2.hasScope('read')").anyRequest().permitAll();
-
-    }
+//    @Override
+//    public void configure(final HttpSecurity http) throws Exception {
+//        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).and().authorizeRequests().antMatchers("/swagger*", "/v2/**").access("#oauth2.hasScope('read')").anyRequest().permitAll();
+//
+//    }
 
     // JWT token store
 
@@ -66,7 +66,7 @@ public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter 
     @Bean
     public JwtClaimsSetVerifier issuerClaimVerifier() {
         try {
-            return new IssuerClaimVerifier(new URL("http://localhost:8081"));
+            return new IssuerClaimVerifier(new URL("http://localhost:8080"));
         } catch (final MalformedURLException e) {
             throw new RuntimeException(e);
         }
