@@ -41,14 +41,44 @@ class AuthJwtTest {
 	}
 	
 	
-	@DisplayName("인증 실패")
+	@DisplayName("인증 실패 - 빈 정보로 요청")
 	@Test
-	void auth_fail_unauthorized() throws Exception {
+	void auth_fail_unauthorized_empty() throws Exception {
 		
 		mockMvc.perform(post("/oauth/token"))
 				.andDo(print())
 				.andExpect(status().is4xxClientError());
 		
+	}
+	
+	@DisplayName("인증 실패 - 잘못 패스워드 정보로 요청")
+	@Test
+	void auth_fail_unauthorized_wrong() throws Exception {
+		
+		Account createAccount = createAccount();
+		
+		mockMvc.perform(post("/oauth/token").with(httpBasic("first-client", "first-secret"))
+							.param("username", createAccount.getEmail())
+							.param("password", "1231234")
+							.param("grant_type", "password")
+						)
+				.andDo(print())
+				.andExpect(status().is4xxClientError());
+	}
+	
+	@DisplayName("인증 실패 - 잘못 패스워드 정보로 요청")
+	@Test
+	void auth_fail_unauthorized_wrong_grantType() throws Exception {
+		
+		Account createAccount = createAccount();
+		
+		mockMvc.perform(post("/oauth/token").with(httpBasic("first-client", "first-secret"))
+							.param("username", createAccount.getEmail())
+							.param("password", "123123")
+							.param("grant_type", "pass")
+						)
+				.andDo(print())
+				.andExpect(status().is4xxClientError());
 	}
 	
 	@DisplayName("인증 성공")
@@ -68,17 +98,7 @@ class AuthJwtTest {
 				.andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("access_token").exists());
-		
-//				
-//				
-//				
-//				.with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
-//				.param("username" , "email")
-//				.param("password" , "password")
-//				.param("grant_type" , "password"))
-//				.andDo(print())
-//				.andExpect(status().isOk())
-//				.andExpect(jsonPath("access_token").exists());
+
 		
 	}
 
