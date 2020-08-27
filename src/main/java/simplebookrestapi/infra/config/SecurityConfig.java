@@ -10,11 +10,13 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 import lombok.RequiredArgsConstructor;
+import simplebookrestapi.infra.jwt.JwtAuthEntryPoint;
 import simplebookrestapi.modules.service.AccountService;
 
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	private final AccountService accountService;
 	//private final AppProperties appProperties;
+	private final JwtAuthEntryPoint unauthorizedHandler;
 	private final PasswordEncoder passwordEncoder;
 	
 	@Bean
@@ -47,6 +50,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		authenticationProvider.setUserDetailsService(accountService);
 		authenticationProvider.setPasswordEncoder(passwordEncoder); // 패스워드를 암호활 경우 사용한다
 		return authenticationProvider;
+	}
+	
+	@Override
+	public void configure(HttpSecurity http) throws Exception {
+		// TODO Auto-generated method stub
+		http.anonymous()
+				.and()
+			.authorizeRequests()
+				.mvcMatchers(HttpMethod.GET, "/api/**")
+					.permitAll()
+				.anyRequest()
+					.authenticated()
+				.and()
+			.exceptionHandling()
+				.authenticationEntryPoint(unauthorizedHandler)
+				.and()
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		
+		//http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 		
 }
