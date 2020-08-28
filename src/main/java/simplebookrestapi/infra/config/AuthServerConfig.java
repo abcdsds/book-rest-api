@@ -52,9 +52,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter{
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
 		// TODO Auto-generated method stub
 		final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
-        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
+        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), authJwtAccessTokenConverter()));
         
-		endpoints.tokenStore(tokenStore())
+		endpoints.tokenStore(authTokenStore())
 					.tokenEnhancer(tokenEnhancerChain)
 					.authenticationManager(authenticationManager)
 					//.accessTokenConverter(accessTokenConverter())
@@ -63,14 +63,14 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter{
 	
 
 	@Bean
-	//@Qualifier("authTokenStore")
-    public TokenStore tokenStore() {
-    	return new JwtTokenStore(accessTokenConverter());
+	@Qualifier("authTokenStore")
+    public TokenStore authTokenStore() {
+    	return new JwtTokenStore(authJwtAccessTokenConverter());
     }
 
 	@Bean
-	//@Qualifier("authJwtAccessTokenConverter")
-    public JwtAccessTokenConverter accessTokenConverter() {
+	@Qualifier("authJwtAccessTokenConverter")
+    public JwtAccessTokenConverter authJwtAccessTokenConverter() {
         final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setSigningKey("123");
 

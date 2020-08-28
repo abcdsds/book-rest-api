@@ -1,19 +1,22 @@
 package simplebookrestapi.infra;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import org.apache.http.HttpHeaders;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import simplebookrestapi.modules.entity.Account;
 import simplebookrestapi.modules.entity.AccountRole;
@@ -22,72 +25,22 @@ import simplebookrestapi.modules.repository.AccountRepository;
 
 @AutoConfigureMockMvc
 @SpringBootTest
-class AuthJwtTest {
+class ResourceServerTest {
 
 	@Autowired MockMvc mockMvc;
 	@Autowired AccountRepository accountRepository;
 	@Autowired PasswordEncoder passwordEncoder;
-	
-	
-	@BeforeEach
-	void init() {
-		
-		accountRepository.deleteAll();
-	}
 	
 	private Account createAccount() {
 		Account account = Account.builder().email("asodasd@naver.com").nickname("nickname").password(passwordEncoder.encode("123123")).role(AccountRole.ROLE_USER).type(AccountType.NONE).build();
 		return accountRepository.save(account);
 	}
 	
-	
-	@DisplayName("인증 실패 - 빈 정보로 요청")
-	@Test
-	void auth_fail_unauthorized_empty() throws Exception {
-		
-		mockMvc.perform(post("/oauth/token"))
-				.andDo(print())
-				.andExpect(status().is4xxClientError());
-		
-	}
-	
-	@DisplayName("인증 실패 - 잘못 패스워드 정보로 요청")
-	@Test
-	void auth_fail_unauthorized_wrong() throws Exception {
-		
-		Account createAccount = createAccount();
-		
-		mockMvc.perform(post("/oauth/token").with(httpBasic("first-client", "first-secret"))
-							.param("username", createAccount.getEmail())
-							.param("password", "1231234")
-							.param("grant_type", "password")
-						)
-				.andDo(print())
-				.andExpect(status().is4xxClientError());
-	}
-	
-	@DisplayName("인증 실패 - 잘못 패스워드 정보로 요청")
-	@Test
-	void auth_fail_unauthorized_wrong_grantType() throws Exception {
-		
-		Account createAccount = createAccount();
-		
-		mockMvc.perform(post("/oauth/token").with(httpBasic("first-client", "first-secret"))
-							.param("username", createAccount.getEmail())
-							.param("password", "123123")
-							.param("grant_type", "pass")
-						)
-				.andDo(print())
-				.andExpect(status().is4xxClientError());
-	}
-	
-	@DisplayName("인증 성공")
-	@Test
-	void auth_success() throws Exception {
+	String getAuthToken() throws Exception {
 
 		Account createAccount = createAccount();
 		
-		mockMvc.perform(post("/oauth/token")
+		ResultActions andExpect = mockMvc.perform(post("/oauth/token")
 							.with(httpBasic("first-client", "first-secret"))
 							.param("username", createAccount.getEmail())
 							.param("password", "123123")
@@ -98,7 +51,22 @@ class AuthJwtTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("access_token").exists());
 
+		String contentAsString = andExpect.andReturn().getResponse().getContentAsString();
+		JSONTokener jsonTokener = new JSONTokener(contentAsString);
+		JSONObject nextValue = (JSONObject) jsonTokener.nextValue();
+		return nextValue.getString("access_token");
 		
 	}
-
+	
+	@Test
+	void test() throws Exception {
+		
+		mockMvc.perform(get("/api/book")
+							.header(HttpHeaders.AUTHORIZATION, "Bearer " + getAuthToken())
+						)
+					.andDo(print())
+					.andExpect(status().isOk());
+					
+		
+	}
 }

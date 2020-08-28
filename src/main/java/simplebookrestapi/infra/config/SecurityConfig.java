@@ -63,16 +63,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.and()
 			.authorizeRequests()
 				.mvcMatchers(HttpMethod.GET, "/api/**")
-					.permitAll()
+					.authenticated()
 				.anyRequest()
-					//.permitAll()
 					.authenticated()
 				.and()
 			.exceptionHandling()
 				.authenticationEntryPoint(unauthorizedHandler)
 				.and()
-				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 		
+		http.csrf().disable();
 		//http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 	

@@ -3,6 +3,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -19,10 +20,16 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtClaimsSetVerifier;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
+@RequiredArgsConstructor
 @EnableResourceServer
 public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
+	
+	private final TokenStore resourceTokenStore;
+	
 //    @Override
 //    public void configure(final HttpSecurity http) throws Exception {
 //        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).and().authorizeRequests().antMatchers("/swagger*", "/v2/**").access("#oauth2.hasScope('read')").anyRequest().permitAll();
@@ -36,25 +43,17 @@ public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter 
         config.tokenServices(tokenServices());
     }
 
-    @Bean
-    public TokenStore tokenStore() {
-        return new JwtTokenStore(accessTokenConverter());
+    //@Bean(name = "resourceTokenStore")
+    public TokenStore resourceTokenStore() {
+        return new JwtTokenStore(resourceJwtAccessTokenConverter());
     }
 
-    @Bean
-    public JwtAccessTokenConverter accessTokenConverter() {
+    @Bean(name = "resourceJwtAccessTokenConverter")
+    public JwtAccessTokenConverter resourceJwtAccessTokenConverter() {
         final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setSigningKey("123");
         converter.setJwtClaimsSetVerifier(jwtClaimsSetVerifier());
 
-        // final Resource resource = new ClassPathResource("public.txt");
-        // String publicKey = null;
-        // try {
-        // publicKey = IOUtils.toString(resource.getInputStream(), Charset.defaultCharset());
-        // } catch (final IOException e) {
-        // throw new RuntimeException(e);
-        // }
-        // converter.setVerifierKey(publicKey);
         return converter;
     }
 
@@ -81,7 +80,7 @@ public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter 
     @Primary
     public DefaultTokenServices tokenServices() {
         final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-        defaultTokenServices.setTokenStore(tokenStore());
+        defaultTokenServices.setTokenStore(resourceTokenStore);
         return defaultTokenServices;
     }
 }
